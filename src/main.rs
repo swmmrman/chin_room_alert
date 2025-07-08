@@ -48,6 +48,9 @@ fn main() {
                 }
                 sleep(Duration::from_millis(100));
             }
+            else {
+                sleep(Duration::from_secs(1));
+            }
             let guard = running_t.lock().unwrap();
             if !*guard {
                 break;
