@@ -1,12 +1,14 @@
 use reqwest;
 use std::process;
-use std::{io::Write, process::exit};
-use std::thread::sleep;
+use std::{io::Write};
+use std::thread::{self, sleep};
 use std::time::Duration;
 use rppal::{gpio,pwm};
 
 
 fn main() {
+    let max_temp = 50.0f32;//72.9f32;
+    let mut over_temp = false;
     let buzzer_open = 
         // pwm::Pwm::with_frequency(
         //     pwm::Channel::Pwm0,
@@ -20,12 +22,28 @@ fn main() {
         Ok(p) => p,
         Err(e) => {
             println!("PWM Error:{}", e);
-            exit(1);
+            process::exit(1)
         },
     };
     buzzer.set_frequency(1000.2f64, 0.5f64).unwrap();
     buzzer.set_polarity(pwm::Polarity::Normal).unwrap();
-
+    let _buzzer_thread = std::thread::spawn(move || { 
+        loop {
+            if over_temp {
+                for _ in 0..4 {
+                    match buzzer.enable() {
+                    Ok(_) => (),
+                    Err(_) => (),
+                    }
+                    sleep(Duration::from_millis(10000));
+                    match buzzer.disable() {
+                        Ok(_) => (),
+                        Err(_) => (),
+                    }
+                }
+            }
+        }
+    });
     loop {
         let ans = match reqwest::blocking::get("http://192.168.1.134/temp_in.txt") {
             Ok(r) =>  match r.text() {
@@ -37,6 +55,12 @@ fn main() {
                 "404".to_owned()
             }
         };
+        if &ans.parse::<f32>().unwrap() > &max_temp {
+            over_temp = true;
+        }
+        else {
+            over_temp = false;
+        }
         let mut outfile = std::fs::OpenOptions::new()
             .write(true)
             .create(false)
@@ -56,16 +80,6 @@ fn main() {
             }
         }
         drop(outfile);
-        //println!("{}", ans);
-        // match buzzer.enable() {
-        //     Ok(_) => (),
-        //     Err(_) => (),
-        // }
-        // sleep(Duration::from_millis(10000));
-        // match buzzer.disable() {
-        //     Ok(_) => (),
-        //     Err(_) => (),
-        // }
         sleep(Duration::from_millis(2000));
     }
 }
