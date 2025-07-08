@@ -1,4 +1,5 @@
 use reqwest;
+use std::process;
 use std::{io::Write, process::exit};
 use std::thread::sleep;
 use std::time::Duration;
@@ -41,8 +42,19 @@ fn main() {
             .create(false)
             .open("/tmp/ledpipe")
             .unwrap();
-        outfile.write(format!("{}\n",ans).as_bytes());
-        outfile.flush();
+        match outfile.write(format!("{}\n",ans).as_bytes()) {
+            Ok(_) => (),
+            Err(e) => {
+                println!("Pipe failure: {}", e);
+                process::exit(1)
+            }
+        }
+        match outfile.flush() {
+            Ok(_) => (),
+            Err(e) => {
+                println!("Flush failure: {}, Call the plumber.", e)
+            }
+        }
         drop(outfile);
         //println!("{}", ans);
         // match buzzer.enable() {
