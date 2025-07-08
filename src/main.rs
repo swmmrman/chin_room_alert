@@ -1,9 +1,10 @@
 use reqwest;
-use std::{process, sync::{Arc, Mutex}};
+use std::process;
+use std::sync::{Arc, Mutex};
 use std::io::Write;
-use std::thread::{self, sleep};
+use std::thread::sleep;
 use std::time::Duration;
-use rppal::{gpio,pwm};
+use rppal::pwm;
 
 
 fn main() {
@@ -24,18 +25,16 @@ fn main() {
         loop {
             let ot = over_t.lock().unwrap();
             if *ot {
-                for _ in 0..4 {
-                    match buzzer.enable() {
+                match buzzer.enable() {
+                Ok(_) => (),
+                Err(_) => (),
+                }
+                sleep(Duration::from_millis(200));
+                match buzzer.disable() {
                     Ok(_) => (),
                     Err(_) => (),
-                    }
-                    sleep(Duration::from_millis(100));
-                    match buzzer.disable() {
-                        Ok(_) => (),
-                        Err(_) => (),
-                    }
-                    sleep(Duration::from_millis(900))
                 }
+                sleep(Duration::from_millis(800));
             }
         }
     });
