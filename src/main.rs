@@ -8,7 +8,7 @@ use rppal::pwm;
 
 
 fn main() {
-    let max_temp = 72.9f32;
+    let max_temp = 40.00f32;//73.9f32;
     let over_temp = Arc::new(Mutex::new(false));
     let over_t = Arc::clone(&over_temp);
     let _buzzer_thread = std::thread::spawn(move || { 
@@ -20,21 +20,22 @@ fn main() {
                 process::exit(1)
             },
         };
-        buzzer.set_frequency(1000.2f64, 0.5f64).unwrap();
+        buzzer.set_frequency(4000.2f64, 0.5f64).unwrap();
         buzzer.set_polarity(pwm::Polarity::Normal).unwrap();
         loop {
             let ot = over_t.lock().unwrap();
             if *ot {
+                drop(ot);
                 match buzzer.enable() {
                 Ok(_) => (),
                 Err(_) => (),
                 }
-                sleep(Duration::from_millis(100));
+                sleep(Duration::from_millis(50));
                 match buzzer.disable() {
                     Ok(_) => (),
                     Err(_) => (),
                 }
-                sleep(Duration::from_millis(400));
+                sleep(Duration::from_millis(100));
             }
         }
     });
@@ -56,6 +57,7 @@ fn main() {
         else {
             *set_ot = false;
         }
+        drop(set_ot);
         let mut outfile = std::fs::OpenOptions::new()
             .write(true)
             .create(false)
