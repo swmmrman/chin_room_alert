@@ -1,5 +1,5 @@
 use reqwest;
-use std::process::exit;
+use std::{io::Write, process::exit};
 use std::thread::sleep;
 use std::time::Duration;
 use rppal::{gpio,pwm};
@@ -36,7 +36,15 @@ fn main() {
                 "404".to_owned()
             }
         };
-        println!("{}", ans);
+        let mut outfile = std::fs::OpenOptions::new()
+            .write(true)
+            .create(false)
+            .open("/tmp/ledpipe")
+            .unwrap();
+        outfile.write(format!("{}\n",ans).as_bytes());
+        outfile.flush();
+        drop(outfile);
+        //println!("{}", ans);
         // match buzzer.enable() {
         //     Ok(_) => (),
         //     Err(_) => (),
@@ -46,6 +54,6 @@ fn main() {
         //     Ok(_) => (),
         //     Err(_) => (),
         // }
-        sleep(Duration::from_millis(1000));
+        sleep(Duration::from_millis(2000));
     }
 }
