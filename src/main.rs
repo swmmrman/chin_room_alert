@@ -28,11 +28,12 @@ fn main() {
                     Ok(_) => (),
                     Err(_) => (),
                     }
-                    sleep(Duration::from_millis(10000));
+                    sleep(Duration::from_millis(100));
                     match buzzer.disable() {
                         Ok(_) => (),
                         Err(_) => (),
                     }
+                    sleep(Duration::from_millis(900))
                 }
             }
         }
