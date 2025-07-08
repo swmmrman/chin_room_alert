@@ -16,7 +16,7 @@ fn main() {
     let running_m = Arc::clone(&running);
     ctrlc::set_handler(move || {
         let mut guard = running.lock().unwrap();
-        println!("\rExiting please wait.");
+        println!("Exiting please wait.");
         *guard = false;
         drop(guard);
     }).expect("Failed to set ctrl-c");
@@ -49,7 +49,8 @@ fn main() {
                 sleep(Duration::from_millis(100));
             }
             else {
-                sleep(Duration::from_secs(1));
+                drop(ot);
+                sleep(Duration::from_secs(2));
             }
             let guard = running_t.lock().unwrap();
             if !*guard {
