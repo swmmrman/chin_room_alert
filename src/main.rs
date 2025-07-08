@@ -9,7 +9,7 @@ use rppal::pwm;
 
 fn main() {
     let mut max_temp: f32 = 70.9; 
-    let offset: f32 = -32.0; // Current sensor overreads by ~2 degrees.
+    let offset: f32 = 2.0; // Current sensor overreads by ~2 degrees.
     max_temp += offset;
     let running = Arc::new(Mutex::new(true));
     let running_t = Arc::clone(&running);
