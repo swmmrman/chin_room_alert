@@ -8,7 +8,9 @@ use rppal::pwm;
 
 
 fn main() {
-    let max_temp = 40.00f32;//73.9f32;
+    let mut max_temp: f32 = 70.9; 
+    let offset: f32 = 2.0; // Current sensor overreads by ~2 degrees.
+    max_temp += offset;
     let over_temp = Arc::new(Mutex::new(false));
     let over_t = Arc::clone(&over_temp);
     let _buzzer_thread = std::thread::spawn(move || { 
