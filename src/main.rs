@@ -16,6 +16,7 @@ fn main() {
     let running_m = Arc::clone(&running);
     ctrlc::set_handler(move || {
         let mut guard = running.lock().unwrap();
+        println!("\rExiting please wait.");
         *guard = false;
     }).expect("Failed to set ctrl-c");
     let over_temp = Arc::new(Mutex::new(false));
