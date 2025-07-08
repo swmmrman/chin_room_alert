@@ -9,11 +9,18 @@ use rppal::pwm;
 
 fn main() {
     let mut max_temp: f32 = 70.9; 
-    let offset: f32 = 2.0; // Current sensor overreads by ~2 degrees.
+    let offset: f32 = -32.0; // Current sensor overreads by ~2 degrees.
     max_temp += offset;
+    let running = Arc::new(Mutex::new(true));
+    let running_t = Arc::clone(&running);
+    let running_m = Arc::clone(&running);
+    ctrlc::set_handler(move || {
+        let mut guard = running.lock().unwrap();
+        *guard = false;
+    }).expect("Failed to set ctrl-c");
     let over_temp = Arc::new(Mutex::new(false));
     let over_t = Arc::clone(&over_temp);
-    let _buzzer_thread = std::thread::spawn(move || { 
+    let buzzer_thread = std::thread::spawn(move || { 
         let buzzer_open = pwm::Pwm::new(pwm::Channel::Pwm0);
         let buzzer = match buzzer_open {
             Ok(p) => p,
@@ -24,7 +31,9 @@ fn main() {
         };
         buzzer.set_frequency(4000.2f64, 0.5f64).unwrap();
         buzzer.set_polarity(pwm::Polarity::Normal).unwrap();
-        loop {
+        let mut running_in_t = true;
+        while running_in_t {
+            running_in_t = running_t.lock().unwrap().clone();
             let ot = over_t.lock().unwrap();
             if *ot {
                 drop(ot);
@@ -79,6 +88,12 @@ fn main() {
             }
         }
         drop(outfile);
+        let gaurd = running_m.lock().unwrap();
+        if !*gaurd {
+            break;
+        }
+        drop(gaurd);
         sleep(Duration::from_millis(2000));
     }
+    buzzer_thread.join().unwrap();
 }
