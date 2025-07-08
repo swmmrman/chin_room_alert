@@ -9,25 +9,18 @@ use rppal::{gpio,pwm};
 fn main() {
     let max_temp = 50.0f32;//72.9f32;
     let mut over_temp = false;
-    let buzzer_open = 
-        // pwm::Pwm::with_frequency(
-        //     pwm::Channel::Pwm0,
-        //     7400.0f64,
-        //     50.0f64,
-        //     pwm::Polarity::Normal,
-        //     false,
-        pwm::Pwm::new(pwm::Channel::Pwm0);
-    //);
-    let buzzer = match buzzer_open {
-        Ok(p) => p,
-        Err(e) => {
-            println!("PWM Error:{}", e);
-            process::exit(1)
-        },
-    };
-    buzzer.set_frequency(1000.2f64, 0.5f64).unwrap();
-    buzzer.set_polarity(pwm::Polarity::Normal).unwrap();
     let _buzzer_thread = std::thread::spawn(move || { 
+        let buzzer_open = pwm::Pwm::new(pwm::Channel::Pwm0);
+        let buzzer = match buzzer_open {
+            Ok(p) => p,
+            Err(e) => {
+                println!("PWM Error:{}", e);
+                process::exit(1)
+            },
+        };
+        let over_temp = true;
+        buzzer.set_frequency(1000.2f64, 0.5f64).unwrap();
+        buzzer.set_polarity(pwm::Polarity::Normal).unwrap();
         loop {
             if over_temp {
                 for _ in 0..4 {
