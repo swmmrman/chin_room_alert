@@ -18,6 +18,7 @@ fn main() {
         let mut guard = running.lock().unwrap();
         println!("\rExiting please wait.");
         *guard = false;
+        drop(guard);
     }).expect("Failed to set ctrl-c");
     let over_temp = Arc::new(Mutex::new(false));
     let over_t = Arc::clone(&over_temp);
@@ -32,9 +33,7 @@ fn main() {
         };
         buzzer.set_frequency(4000.2f64, 0.5f64).unwrap();
         buzzer.set_polarity(pwm::Polarity::Normal).unwrap();
-        let mut running_in_t = true;
-        while running_in_t {
-            running_in_t = running_t.lock().unwrap().clone();
+        loop {
             let ot = over_t.lock().unwrap();
             if *ot {
                 drop(ot);
@@ -49,6 +48,11 @@ fn main() {
                 }
                 sleep(Duration::from_millis(100));
             }
+            let guard = running_t.lock().unwrap();
+            if !*guard {
+                break;
+            }
+            drop(guard);
         }
     });
     loop {
